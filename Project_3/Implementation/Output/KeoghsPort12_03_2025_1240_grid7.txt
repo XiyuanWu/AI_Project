@@ -1,0 +1,24 @@
+[2025-12-03 12:40:35] Program starts. 
+[2025-12-03 12:40:35] File open, this is grid7. There are total of 11 containers on the ship.
+[2025-12-03 12:40:35] Move 1: [5, 3] -> [8, 9], Steps(minutes): 19
+[2025-12-03 12:40:35] Move 2: [6, 3] -> [8, 8], Steps(minutes): 15
+[2025-12-03 12:40:35] Move 3: [6, 4] -> [8, 7], Steps(minutes): 11
+[2025-12-03 12:40:35] Move 4: [7, 2] -> [8, 6], Steps(minutes): 11
+[2025-12-03 12:40:35] Move 5: [7, 3] -> [7, 9], Steps(minutes): 10
+[2025-12-03 12:40:35] Move 6: [7, 4] -> [7, 8], Steps(minutes): 9
+[2025-12-03 12:40:35] Move 7: [7, 5] -> [7, 7], Steps(minutes): 5
+[2025-12-03 12:40:35] Move 8: [8, 2] -> [7, 6], Steps(minutes): 11
+[2025-12-03 12:40:35] Move 9: [8, 3] -> [6, 9], Steps(minutes): 12
+[2025-12-03 12:40:35] Finished a cycle. Total steps: 110
+[2025-12-03 12:40:35] Balanced Grid: 
+[[  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [ -1   0   0   0   0   0   0   0   0 334   0  -1]
+ [ -1  -1   0   0   0   0 100  20  20  40  -1  -1]
+ [ -1  -1   0   0 333 333  20  50  82  50  -1  -1]]
+[2025-12-03 12:40:35] File was written to destop.
+[2025-12-03 12:40:35] Program ends. Computation time: 110 minutes

@@ -1,0 +1,4 @@
+[2025-12-03 12:40:31] Program starts. 
+[2025-12-03 12:40:31] File open, this is grid3. There are total of 2 containers on the ship.
+[2025-12-03 12:40:31] This mainfest is not balanceable, no action needed
+[2025-12-03 12:40:31] Program ends. Computation time: 0 minutes

@@ -1,9 +1,8 @@
-[2025-11-18 21:30:52] Program starts. 
-[2025-11-18 21:30:52] There are total of 6 containers on the ship.
-[2025-11-18 21:30:52] Move 1: [8, 1] -> [8, 9], Steps: 23
-[2025-11-18 21:30:52] Total steps: 32
-[2025-11-18 21:30:52] Moves: [((8, 1), (8, 9), 23)]
-[2025-11-18 21:30:52] Grid: 
+[2025-12-03 12:40:34] Program starts. 
+[2025-12-03 12:40:34] File open, this is grid6. There are total of 6 containers on the ship.
+[2025-12-03 12:40:34] Move 1: [8, 1] -> [8, 9], Steps(minutes): 23
+[2025-12-03 12:40:34] Finished a cycle. Total steps: 32
+[2025-12-03 12:40:34] Balanced Grid: 
 [[  0   0   0   0   0   0   0   0   0   0   0   0]
  [  0   0   0   0   0   0   0   0   0   0   0   0]
  [  0   0   0   0   0   0   0   0   0   0   0   0]
@@ -13,4 +12,5 @@
  [  0   0   0   0   0   0   0   0   0   0   0   0]
  [  0   0   0   0   0   0   0   0   0   0   0   0]
  [ -1   0  40 334 333 333   0   0   0  61 900  -1]]
-[2025-11-18 21:30:52] Program ends. Computation time: 0.0 seconds
+[2025-12-03 12:40:34] File was written to destop.
+[2025-12-03 12:40:34] Program ends. Computation time: 32 minutes

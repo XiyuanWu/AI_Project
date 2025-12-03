@@ -1,4 +1,0 @@
-[2025-11-18 21:30:48] Program starts. 
-[2025-11-18 21:30:48] There are total of 0 containers on the ship.
-[2025-11-18 21:30:48] This mainfest is already balanced, no action needed.
-[2025-11-18 21:30:48] Program ends. Computation time: 0.0 seconds
