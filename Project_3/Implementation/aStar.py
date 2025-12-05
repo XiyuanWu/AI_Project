@@ -74,7 +74,7 @@ def canPlace(grid,col, nanSlots):
 
     return nextRow
 
-def heuristicFunction(grid,firstPort, firstShip):
+def heuristicFunction(grid, firstPort, firstShip):
     portWeight, shipWeight = calcWeights(grid)
     diff = abs(portWeight - shipWeight)
     total = firstPort + firstShip
@@ -87,13 +87,10 @@ def heuristicFunction(grid,firstPort, firstShip):
     move = reduceWeight / 2
 
     heavierSide = ""
-    lighterSide = ""
     if portWeight > shipWeight:
         heavierSide = "port"
-        lighterSide = "ship"
     else:
         heavierSide = "ship"
-        lighterSide = "port"
     
     movable = movableContainers(grid) 
 
@@ -113,7 +110,13 @@ def heuristicFunction(grid,firstPort, firstShip):
     else:
         distance = bestPos[1] - 6
 
-    return max(1, distance)
+    cranePos = (8, 0)
+    craneTravelEstimate = calcManhatten(cranePos, bestPos)
+    craneReturnEstimate = calcManhatten(bestPos, cranePos)
+    totalEstimate = craneTravelEstimate + distance + craneReturnEstimate
+
+    return max(1, totalEstimate)
+
 
 def getMoves(grid,firstPort,firstShip, nanSlots):
     portWeight, shipWeight = calcWeights(grid)
@@ -150,22 +153,28 @@ def getMoves(grid,firstPort,firstShip, nanSlots):
 
     return validMoves
 
-def makeMove(grid, fromPos, toPos, weight, desc):
+def makeMove(grid, fromPos, toPos, weight, desc, cranePos):
     newGrid = deepcopy(grid)
     del newGrid[fromPos]
     newGrid[toPos] = (weight, desc)
-    cost = calcManhatten(fromPos, toPos)
-    return newGrid, cost
+    
+    travelToContainer = calcManhatten(cranePos, fromPos)
+    moveContainer = calcManhatten(fromPos, toPos)
+    cost = travelToContainer + moveContainer
+    
+    return newGrid, cost, toPos
 
 def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
     counter = 0
     prioQueue = []
     closedSet = {}
 
+    craneStart = (8, 0)
+
     hCost = heuristicFunction(firstGrid, firstPort, firstShip)
     fCost = 0 + hCost
 
-    heapq.heappush(prioQueue, (fCost, counter, 0, firstGrid, []))
+    heapq.heappush(prioQueue, (fCost, counter, 0, firstGrid, [], craneStart))
     counter += 1
 
     nodesSeen = 0
@@ -183,7 +192,7 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
             
             return None
         
-        fCost, x, gCost, currGrid, moves = heapq.heappop(prioQueue)
+        fCost, x, gCost, currGrid, moves, cranePos = heapq.heappop(prioQueue)
         nodesSeen += 1
 
         if nodesSeen % 100 == 0:
@@ -221,7 +230,7 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
         validMoves = getMoves(currGrid, firstPort, firstShip, nanSlots)
 
         for fromPos, toPos, weight, desc in validMoves:
-            newGrid, mCost = makeMove(currGrid, fromPos, toPos, weight, desc)
+            newGrid, mCost, newCranePos = makeMove(currGrid, fromPos, toPos, weight, desc, cranePos)
 
             newG = gCost + mCost
 
@@ -238,7 +247,7 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
 
             newMoves = moves + [nextMove]
 
-            heapq.heappush(prioQueue,(newF, counter, newG, newGrid, newMoves))
+            heapq.heappush(prioQueue, (newF, counter, newG, newGrid, newMoves, newCranePos))
             counter += 1
 
     print(f"{getTimestamp()} NO SOLUTION FOUND")
@@ -297,13 +306,14 @@ def parseManifest(filename):
 
 
 def generateManifest(filename, finalGrid, baseName):
-    desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+    scriptDir = os.path.dirname(os.path.abspath(__file__))
+    outputDir = os.path.join(scriptDir, 'Output')
 
     currTime = datetime.now()
     timeStamp = currTime.strftime("%m_%d_%Y_%H%M")
     
     saveFilename = f"{baseName}_{timeStamp}OUTBOUND.txt"
-    savePath = os.path.join(desktop, saveFilename)
+    savePath = os.path.join(outputDir, saveFilename)
 
     with open(filename, 'r') as f:
         lines = f.readlines()
@@ -371,8 +381,7 @@ def generateManifest(filename, finalGrid, baseName):
     return savePath
 
 
-def displayGrid(grid, gridName="Grid"):
-    """Display grid visualization"""
+def displayGrid(grid, nanSlots, gridName="Grid"):
     print(f"{getTimestamp()} {gridName}:")
     
     for row in range(8, 0, -1):
@@ -380,10 +389,9 @@ def displayGrid(grid, gridName="Grid"):
         for col in range(1, 13):
             if (row, col) in grid:
                 weight, desc = grid[(row, col)]
-                if desc == "NAN":
-                    line += f"{-1:4}"
-                else:
-                    line += f"{weight:4}"
+                line += f"{weight:4}"
+            elif (row, col) in nanSlots:
+                line += f"{-1:4}"
             else:
                 line += f"{0:4}"
             
@@ -392,8 +400,16 @@ def displayGrid(grid, gridName="Grid"):
         line += "]"
         print(line)
 
-
-def main(manifest):
+def main():
+    manifest = input("Enter the manifest filename (e.g., ShipCase5.csv): ").strip()
+    
+    if not os.path.dirname(manifest):
+        manifest = os.path.join('..', 'Dataset', manifest)
+    
+    if not os.path.exists(manifest):
+        print(f"Error: File '{manifest}' not found.")
+        return
+    
     baseName = os.path.splitext(os.path.basename(manifest))[0]
 
     print(f"{getTimestamp()} Program starts.")
@@ -408,21 +424,21 @@ def main(manifest):
     if numContainers == 0:
         print(f"{getTimestamp()} Ship is empty - already balanced!")
         savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to desktop.")
+        print(f"{getTimestamp()} File was written to Output directory.")
         print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
         return
     
     if numContainers == 1:
         print(f"{getTimestamp()} Ship has one container - already balanced!")
         savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to desktop.")
+        print(f"{getTimestamp()} File was written to Output directory.")
         print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
         return
     
     if isBalanced(grid, port, ship):
         print(f"{getTimestamp()} Ship is already balanced!")
         savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to desktop.")
+        print(f"{getTimestamp()} File was written to Output directory.")
         print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
         return
     
@@ -447,21 +463,15 @@ def main(manifest):
         del finalGrid[move['from']]
         finalGrid[move['to']] = (move['weight'], move['description'])
     
-    displayGrid(finalGrid, "Balanced Grid")
+    displayGrid(finalGrid, nanSlots, "Balanced Grid")
     
     outboundPath = generateManifest(manifest, finalGrid, baseName)
-    print(f"{getTimestamp()} File was written to desktop.")
+    print(f"{getTimestamp()} File was written to Output directory. {outboundPath}")
     
-    computationTime = int(time.time() - startTime)
+    # computationTime = int(time.time() - startTime)
     print(f"{getTimestamp()} Program ends. Computation time: {totalCost} minutes")
 
 
+
 if __name__ == "__main__":
-    main('../Dataset//ShipCase5.csv')
-
-
-
-    
-
-
-
+    main()
