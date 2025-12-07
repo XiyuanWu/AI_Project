@@ -3,6 +3,7 @@ import os
 import time
 from copy import deepcopy
 from datetime import datetime
+from pathlib import Path
 
 
 def getTimestamp():
@@ -164,7 +165,7 @@ def makeMove(grid, fromPos, toPos, weight, desc, cranePos):
     
     return newGrid, cost, toPos
 
-def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
+def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180, log_print=print):
     counter = 0
     prioQueue = []
     closedSet = {}
@@ -184,10 +185,10 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
 
     while prioQueue:
         if time.time() - startTime > timeLimit:
-            print(f"{getTimestamp()} Time limit reached")
+            log_print(f" Time limit reached")
 
             if bestSol:
-                print(f"{getTimestamp()} Returning best solution so far")
+                log_print(f" Returning best solution so far")
                 return bestSol
             
             return None
@@ -197,18 +198,18 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
 
         if nodesSeen % 100 == 0:
             port, ship = calcWeights(currGrid)
-            print(f"{getTimestamp()} Seen {nodesSeen} nodes, Imbalance: {abs(port - ship)}kg, Moves: {len(moves)}")
+            log_print(f" Seen {nodesSeen} nodes, Imbalance: {abs(port - ship)}kg, Moves: {len(moves)}")
 
         if isBalanced(currGrid, firstPort, firstShip):
-            print(f"{getTimestamp()} Solution is found in {time.time() - startTime:.2f} seconds")
-            print(f"{getTimestamp()} Total moves: {len(moves)}")
+            log_print(f" Solution is found in {time.time() - startTime:.2f} seconds")
+            log_print(f" Total moves: {len(moves)}")
 
             port, ship = calcWeights(currGrid)
             currImbalance = abs(port - ship)
 
-            print(f"{getTimestamp()} Port weight: {port} kg")
-            print(f"{getTimestamp()} Ship weight: {ship} kg")
-            print(f"{getTimestamp()} Imbalance: {currImbalance}kg")
+            log_print(f" Port weight: {port} kg")
+            log_print(f" Ship weight: {ship} kg")
+            log_print(f" Imbalance: {currImbalance}kg")
 
             return moves
         
@@ -250,7 +251,7 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180):
             heapq.heappush(prioQueue, (newF, counter, newG, newGrid, newMoves, newCranePos))
             counter += 1
 
-    print(f"{getTimestamp()} NO SOLUTION FOUND")
+    log_print(f" NO SOLUTION FOUND")
     return None
 
 
@@ -381,8 +382,8 @@ def generateManifest(filename, finalGrid, baseName):
     return savePath
 
 
-def displayGrid(grid, nanSlots, gridName="Grid"):
-    print(f"{getTimestamp()} {gridName}:")
+def displayGrid(grid, nanSlots, gridName="Grid", log_print=print):
+    log_print(f" {gridName}:")
     
     for row in range(8, 0, -1):
         line = "["
@@ -398,11 +399,19 @@ def displayGrid(grid, nanSlots, gridName="Grid"):
             if col < 12:
                 line += " "
         line += "]"
-        print(line)
+        log_print(line)
 
 def main():
     manifest = input("Enter the manifest filename (e.g., ShipCase5.csv): ").strip()
+    now = datetime.now()
+    timestamp = now.strftime("%m_%d_%Y_%H%M")
+    log_filename = f"KeoghsPort{timestamp}_{manifest}.txt"
     
+    # create folder if it no exist
+    output_dir = Path("Output")
+    output_dir.mkdir(exist_ok=True)
+    log_file = output_dir / log_filename
+
     if not os.path.dirname(manifest):
         manifest = os.path.join('..', 'Dataset', manifest)
     
@@ -412,64 +421,75 @@ def main():
     
     baseName = os.path.splitext(os.path.basename(manifest))[0]
 
-    print(f"{getTimestamp()} Program starts.")
-    
-    grid, nanSlots = parseManifest(manifest)
-    
-    numContainers = len(grid)
-    print(f"{getTimestamp()} File open, this is {baseName}. There are total of {numContainers} containers on the ship.")
-    
-    port, ship = calcWeights(grid)
-    
-    if numContainers == 0:
-        print(f"{getTimestamp()} Ship is empty - already balanced!")
-        savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to Output directory.")
-        print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
-        return
-    
-    if numContainers == 1:
-        print(f"{getTimestamp()} Ship has one container - already balanced!")
-        savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to Output directory.")
-        print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
-        return
-    
-    if isBalanced(grid, port, ship):
-        print(f"{getTimestamp()} Ship is already balanced!")
-        savePath = generateManifest(manifest, grid, baseName)
-        print(f"{getTimestamp()} File was written to Output directory.")
-        print(f"{getTimestamp()} Program ends. Computation time: 0 minutes")
-        return
-    
-    startTime = time.time()
-    solution = aStar(grid, port, ship, nanSlots, timeLimit=180)
-    
-    if solution is None:
-        print(f"{getTimestamp()} Failed to find solution!")
-        return
-    
-    for i, move in enumerate(solution, 1):
-        fromRow, fromCol = move['from']
-        toRow, toCol = move['to']
-        cost = move['cost']
-        print(f"{getTimestamp()} Move {i}: [{fromRow}, {fromCol}] -> [{toRow}, {toCol}], Steps(minutes): {cost}")
-    
-    totalCost = sum(move['cost'] for move in solution)
-    print(f"{getTimestamp()} Finished a cycle. Total steps: {totalCost}")
-    
-    finalGrid = deepcopy(grid)
-    for move in solution:
-        del finalGrid[move['from']]
-        finalGrid[move['to']] = (move['weight'], move['description'])
-    
-    displayGrid(finalGrid, nanSlots, "Balanced Grid")
-    
-    outboundPath = generateManifest(manifest, finalGrid, baseName)
-    print(f"{getTimestamp()} File was written to Output directory. {outboundPath}")
-    
-    # computationTime = int(time.time() - startTime)
-    print(f"{getTimestamp()} Program ends. Computation time: {totalCost} minutes")
+    with open(log_file,"w") as f:
+        def log_print(*args, **kwargs):
+            # Add timestamp to each log entry
+            timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            msg = " ".join(str(arg) for arg in args)
+            log_entry = f"[{timestamp_str}] {msg}"
+            print(*args, **kwargs)
+            f.write(log_entry + "\n")
+            f.flush()
+            
+        log_print(f" Program starts.")
+        
+        grid, nanSlots = parseManifest(manifest)
+        
+        numContainers = len(grid)
+        log_print(f" File open, this is {baseName}. There are total of {numContainers} containers on the ship.")
+        
+        port, ship = calcWeights(grid)
+        
+        if numContainers == 0:
+            log_print(f" Ship is empty - already balanced!")
+            savePath = generateManifest(manifest, grid, baseName)
+            log_print(f" File was written to Output directory.")
+            log_print(f" Program ends. Computation time: 0 minutes")
+            return
+        
+        if numContainers == 1:
+            log_print(f" Ship has one container - already balanced!")
+            savePath = generateManifest(manifest, grid, baseName)
+            log_print(f" File was written to Output directory.")
+            log_print(f" Program ends. Computation time: 0 minutes")
+            return
+        
+        if isBalanced(grid, port, ship):
+            log_print(f" Ship is already balanced!")
+            savePath = generateManifest(manifest, grid, baseName)
+            log_print(f" File was written to Output directory.")
+            log_print(f" Program ends. Computation time: 0 minutes")
+            return
+        
+        startTime = time.time()
+        solution = aStar(grid, port, ship, nanSlots, timeLimit=180, log_print=log_print)
+        
+        if solution is None:
+            log_print(f" Failed to find solution!")
+            savePath = generateManifest(manifest, grid, baseName)
+            return
+        
+        for i, move in enumerate(solution, 1):
+            fromRow, fromCol = move['from']
+            toRow, toCol = move['to']
+            cost = move['cost']
+            log_print(f" Move {i}: [{fromRow}, {fromCol}] -> [{toRow}, {toCol}], Steps(minutes): {cost}")
+        
+        totalCost = sum(move['cost'] for move in solution)
+        log_print(f" Finished a cycle. Total steps: {totalCost}")
+        
+        finalGrid = deepcopy(grid)
+        for move in solution:
+            del finalGrid[move['from']]
+            finalGrid[move['to']] = (move['weight'], move['description'])
+        
+        displayGrid(finalGrid, nanSlots, "Balanced Grid", log_print)
+        
+        outboundPath = generateManifest(manifest, finalGrid, baseName)
+        log_print(f" File was written to Output directory. {outboundPath}")
+        
+        # computationTime = int(time.time() - startTime)
+        log_print(f" Program ends. Computation time: {totalCost} minutes")
 
 
 
