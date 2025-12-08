@@ -1,0 +1,19 @@
+[2025-12-08 13:34:48] Program starts. 
+[2025-12-08 13:34:48] File open, this is test_demo. There are total of 2 containers on the ship.
+[2025-12-08 13:34:48] This manifest is not currently balanced. Left = 0, Right = 423, Diff = 423, 10% target = 42.30
+[2025-12-08 13:34:48] Attempting to reduce the left-right difference as much as possible.
+[2025-12-08 13:34:48] Move 1: [8, 7] -> [8, 1], Steps(minutes): 15
+[2025-12-08 13:34:48] Finished a cycle. Total steps: 30
+[2025-12-08 13:34:48] Balanced Grid (locally minimal difference): 
+[[  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [  0   0   0   0   0   0   0   0   0   0   0   0]
+ [ -1 123   0   0   0   0   0   0   0 300   0  -1]]
+[2025-12-08 13:34:48] File was written to destop.
+[2025-12-08 13:34:48] A comment was written to the log : N/A
+[2025-12-08 13:34:48] Program ends. Computation time: 30 minutes
