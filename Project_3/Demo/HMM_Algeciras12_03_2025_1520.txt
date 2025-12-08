@@ -1,5 +1,0 @@
-[2025-12-03 15:20:26] Program starts. 
-[2025-12-03 15:20:26] File open, this is test_demo. There are total of 2 containers on the ship.
-[2025-12-03 15:20:26] This mainfest is not balanceable, no action needed
-[2025-12-03 15:20:26] A comment was written to the log : This is a test comment
-[2025-12-03 15:20:26] Program ends. Computation time: 0 minutes
