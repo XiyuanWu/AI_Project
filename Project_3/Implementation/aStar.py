@@ -430,6 +430,14 @@ def main():
             print(*args, **kwargs)
             f.write(log_entry + "\n")
             f.flush()
+
+        def log_hide(*args, **kwargs):
+            # Add timestamp to each log entry
+            timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            msg = " ".join(str(arg) for arg in args)
+            log_entry = f"[{timestamp_str}] {msg}"
+            f.write(log_entry + "\n")
+            f.flush()
             
         log_print(f"{getTimestamp()} Program starts.")
         
@@ -475,6 +483,10 @@ def main():
             cost = move['cost']
             log_print(f"{getTimestamp()} Move {i}: [{fromRow}, {fromCol}] -> [{toRow}, {toCol}], Steps(minutes): {cost}")
         
+            if i < len(solution) + 1:
+                input(f"{getTimestamp()} Press ENTER to move onto next step")
+                log_hide(f"{getTimestamp()} Press ENTER to move onto next step")
+
         totalCost = sum(move['cost'] for move in solution)
         log_print(f"{getTimestamp()} Finished a cycle. Total steps: {totalCost}")
         
