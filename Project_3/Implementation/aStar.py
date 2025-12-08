@@ -251,7 +251,14 @@ def aStar(firstGrid, firstPort, firstShip, nanSlots, timeLimit = 180, log_print=
             heapq.heappush(prioQueue, (newF, counter, newG, newGrid, newMoves, newCranePos))
             counter += 1
 
+    
     log_print(f"{getTimestamp()} NO SOLUTION FOUND")
+    if bestSol:
+        log_print(f"{getTimestamp()} Returning minimal balanced solution with imbalance")
+        return bestSol
+
+
+
     return None
 
 
@@ -496,6 +503,20 @@ def main():
             finalGrid[move['to']] = (move['weight'], move['description'])
         
         displayGrid(finalGrid, nanSlots, "Balanced Grid", log_print)
+
+        finalPort, finalShip = calcWeights(finalGrid)
+        if isBalanced(finalGrid, port, ship):
+            log_print(f"{getTimestamp()} Ship is balanced!")
+        else:
+            imbalance = abs(finalPort - finalShip)
+            threshold = 0.10 * (port + ship)
+            log_print(f"{getTimestamp()} Ship remains UNBALANCED")
+            log_print(f"{getTimestamp()} Port weight: {finalPort} kg")
+            log_print(f"{getTimestamp()} Ship weight: {finalShip} kg")
+            log_print(f"{getTimestamp()} Imbalance: {imbalance}kg (threshold: {threshold:.1f}kg)")
+
+            
+            log_print(f"{getTimestamp()} This is the minimal balance")
 
         def log_hide(*args, **kwargs):
             # Add timestamp to each log entry
